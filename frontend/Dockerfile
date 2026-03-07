@@ -6,6 +6,10 @@ COPY package*.json ./
 RUN npm ci
 # Copy source files
 COPY . .
+# Pass arguments for environment variables during build
+ARG VITE_BACKEND_API_URL
+ENV VITE_BACKEND_API_URL=$VITE_BACKEND_API_URL
+
 # Build the Vite React project
 RUN npm run build
 

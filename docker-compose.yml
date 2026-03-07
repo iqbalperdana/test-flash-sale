@@ -9,6 +9,13 @@ services:
       - DATABASE_URL=postgresql://postgres:password@db:5432/flashsale
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+      - DB_NAME=flashsale
+      - PORT=3000
+      - ALLOWED_ORIGINS=http://localhost:8080
     depends_on:
       - db
       - redis
@@ -17,8 +24,12 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - VITE_BACKEND_API_URL=http://localhost:3000/api
     ports:
       - "8080:80"
+    environment:
+      - BACKEND_API_URL=http://localhost:3000
     depends_on:
       - backend
 
