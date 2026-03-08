@@ -96,3 +96,40 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+## Migration
+
+To create migration template file, use the following command:
+
+```bash
+# windows
+$ npm run migration:create:windows --name="<migration-name>"
+
+# linux
+$ npm run migration:create:linux --name="<migration-name>"
+```
+
+To run migration, use the following command:
+
+```bash
+# run migration
+$ npm run migration:run
+
+```
+
+And to revert migration:
+
+```bash
+# revert migration
+$ npm run migration:revert
+```
+
+## Environment Variables
+
+```bash
+# create .env file
+$ cp .env.example .env
+
+# edit .env file
+$ nano .env
+```

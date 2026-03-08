@@ -1,9 +1,17 @@
-import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
-import { ItemService } from './item.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
+import { ItemService } from './item.service';
 
-@Controller('api/items')
+@Controller('api/v1/items')
 export class ItemController {
   constructor(private readonly itemService: ItemService) {}
 

@@ -1,8 +1,8 @@
 import { registerAs } from '@nestjs/config';
-import { DataSource, DataSourceOptions } from 'typeorm';
 import { config as dotenvConfig } from 'dotenv';
-import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import * as path from 'path';
+import { DataSource, DataSourceOptions } from 'typeorm';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 const envPath = path.resolve(process.cwd(), '.env');
 dotenvConfig({ path: envPath });

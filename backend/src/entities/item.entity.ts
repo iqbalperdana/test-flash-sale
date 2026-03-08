@@ -1,8 +1,8 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -13,6 +13,9 @@ export class Item {
 
   @Column()
   title: string;
+
+  @Column({ unique: true })
+  sku: string;
 
   @Column({ nullable: true })
   description: string;
