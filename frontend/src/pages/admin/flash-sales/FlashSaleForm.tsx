@@ -27,6 +27,16 @@ const FlashSaleForm: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const toLocalDateTimeString = (date: Date) => {
+      const pad = (num: number) => String(num).padStart(2, "0");
+      const year = date.getFullYear();
+      const month = pad(date.getMonth() + 1);
+      const day = pad(date.getDate());
+      const hours = pad(date.getHours());
+      const minutes = pad(date.getMinutes());
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
     const init = async () => {
       try {
         const itemsData = await fetchItemsData();
@@ -37,10 +47,10 @@ const FlashSaleForm: React.FC = () => {
           setFormData({
             name: fs.name,
             startTime: fs.startTime
-              ? new Date(fs.startTime).toISOString().slice(0, 16)
+              ? toLocalDateTimeString(new Date(fs.startTime))
               : "",
             endTime: fs.endTime
-              ? new Date(fs.endTime).toISOString().slice(0, 16)
+              ? toLocalDateTimeString(new Date(fs.endTime))
               : "",
             allocatedStock: fs.allocatedStock,
             availableStock: fs.availableStock,

@@ -1,7 +1,9 @@
+import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import databaseConfig from '../../common/configs/database.config';
+import { RedisModule } from '../../common/redis/redis.module';
 import { FlashSaleModule } from '../flash-sale/flash-sale.module';
 import { InventoryModule } from '../inventory/inventory.module';
 import { ItemModule } from '../item/item.module';
@@ -23,6 +25,15 @@ import { AppService } from './app.service';
     InventoryModule,
     FlashSaleModule,
     OrderModule,
+    RedisModule,
+    BullModule.forRootAsync({
+      useFactory: () => ({
+        connection: {
+          host: process.env.REDIS_HOST || 'localhost',
+          port: parseInt(process.env.REDIS_PORT || '6379', 10),
+        },
+      }),
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
