@@ -27,12 +27,11 @@ export class FlashSaleService {
     const tokensKey = this.getTokensKey(id);
     const buyersKey = this.getBuyersKey(id);
 
-    // Clear existing
     await this.redis.del(tokensKey, buyersKey);
 
     if (stock > 0) {
       const tokens = Array.from({ length: stock }, () => uuidv4());
-      // Push tokens into list
+
       await this.redis.lpush(tokensKey, ...tokens);
     }
   }
@@ -53,7 +52,6 @@ export class FlashSaleService {
     });
     const saved = await this.flashSaleRepository.save(flashSale);
 
-    // Initialize tokens in Redis
     await this.initializeRedisTokens(saved.id, saved.availableStock);
 
     return saved;
@@ -64,14 +62,7 @@ export class FlashSaleService {
   }
 
   async findPublic(): Promise<FlashSale[]> {
-    const now = new Date();
-    return await this.flashSaleRepository
-      .createQueryBuilder('flashSale')
-      .leftJoinAndSelect('flashSale.item', 'item')
-      .where('flashSale.endTime > :now', { now })
-      .andWhere('flashSale.isActive = :isActive', { isActive: true })
-      .orderBy('flashSale.startTime', 'ASC')
-      .getMany();
+    return await this.flashSaleRepository.getActiveAndUpcomingFlashSales();
   }
 
   async findOne(id: number): Promise<FlashSale> {
@@ -107,7 +98,6 @@ export class FlashSaleService {
       updateFlashSaleDto.availableStock !== undefined ||
       updateFlashSaleDto.isActive === true
     ) {
-      // Re-initialize tokens if stock changes or sale reactivates
       await this.initializeRedisTokens(saved.id, saved.availableStock);
     }
 
@@ -117,7 +107,6 @@ export class FlashSaleService {
   async remove(id: number): Promise<void> {
     const flashSale = await this.findOne(id);
     await this.flashSaleRepository.remove(flashSale);
-    // Cleanup Redis
     await this.redis.del(this.getTokensKey(id), this.getBuyersKey(id));
   }
 }

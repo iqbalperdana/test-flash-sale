@@ -20,4 +20,14 @@ export class FlashSaleRepository extends Repository<FlashSale> {
       .where('flashSale.id = :id', { id })
       .getOne();
   }
+
+  async getActiveAndUpcomingFlashSales(): Promise<FlashSale[]> {
+    const now = new Date();
+    return await this.createQueryBuilder('flashSale')
+      .leftJoinAndSelect('flashSale.item', 'item')
+      .where('flashSale.endTime > :now', { now })
+      .andWhere('flashSale.isActive = :isActive', { isActive: true })
+      .orderBy('flashSale.startTime', 'ASC')
+      .getMany();
+  }
 }

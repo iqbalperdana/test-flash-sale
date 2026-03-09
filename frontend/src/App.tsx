@@ -13,6 +13,7 @@ import InventoryPage from "./pages/admin/inventory/InventoryPage";
 import ItemForm from "./pages/admin/items/ItemForm";
 import ItemsPage from "./pages/admin/items/ItemsPage";
 import CheckoutPage from "./pages/customer/CheckoutPage";
+import ConcurrencyTestPage from "./pages/customer/ConcurrencyTestPage";
 import FlashSalesList from "./pages/customer/FlashSalesList";
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
       <Routes>
         <Route path="/" element={<FlashSalesList />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/test" element={<ConcurrencyTestPage />} />
 
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="items" replace />} />
