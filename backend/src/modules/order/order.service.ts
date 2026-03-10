@@ -13,6 +13,7 @@ import { FlashSale } from '../../entities/flash-sale.entity';
 import { OrderItem } from '../../entities/order-item.entity';
 import { Order } from '../../entities/order.entity';
 import { OrderCheckoutDto } from './dto/order-checkout.dto';
+import { OrderPaymentDto } from './dto/order-payment.dto';
 
 @Injectable()
 export class OrderService {
@@ -27,6 +28,101 @@ export class OrderService {
     @Inject('REDIS_CLIENT') private readonly redis: Redis,
     @InjectQueue('orders') private orderQueue: Queue,
   ) {}
+
+  async handleCreateOrder(data: any) {
+    const { userEmail, flashSaleId, token, quantity } = data;
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const flashSale = await queryRunner.manager.findOne(FlashSale, {
+        where: { id: flashSaleId },
+        relations: ['item'],
+      });
+
+      if (!flashSale) throw new Error('Flash Sale not found');
+      if (flashSale.availableStock < quantity)
+        throw new Error('Stock inconsistency');
+
+      flashSale.availableStock -= quantity;
+      await queryRunner.manager.save(FlashSale, flashSale);
+
+      const order = this.orderRepository.create({
+        userEmail,
+        totalAmount: flashSale.item.price * quantity,
+        status: 'PENDING',
+      });
+      const savedOrder = await queryRunner.manager.save(Order, order);
+
+      const orderItem = this.orderItemRepository.create({
+        order: savedOrder,
+        item: flashSale.item,
+        flashSaleId: flashSale.id,
+        quantity,
+        price: flashSale.item.price,
+      });
+      await queryRunner.manager.save(OrderItem, orderItem);
+
+      await queryRunner.commitTransaction();
+
+      // Schedule Expiration Job
+      await this.orderQueue.add(
+        'expire-order',
+        { orderId: savedOrder.id, flashSaleId, userEmail, token },
+        { delay: 10 * 60 * 1000 },
+      );
+
+      return { success: true, orderId: savedOrder.id };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async handleExpireOrder(data: any) {
+    const { orderId, flashSaleId, userEmail, token } = data;
+
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+    });
+    if (!order || order.status !== 'PENDING') return;
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      order.status = 'EXPIRED';
+      await queryRunner.manager.save(Order, order);
+
+      const flashSale = await queryRunner.manager.findOne(FlashSale, {
+        where: { id: flashSaleId },
+      });
+      if (flashSale) {
+        flashSale.availableStock += 1;
+        await queryRunner.manager.save(FlashSale, flashSale);
+      }
+
+      await queryRunner.commitTransaction();
+
+      const tokensKey = this.getTokensKey(flashSaleId);
+      const buyersKey = this.getBuyersKey(flashSaleId);
+
+      await Promise.all([
+        this.redis.srem(buyersKey, userEmail),
+        this.redis.lpush(tokensKey, token),
+      ]);
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
 
   private getTokensKey(id: number) {
     return `flash_sale:${id}:tokens`;
