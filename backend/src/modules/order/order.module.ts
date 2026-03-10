@@ -6,6 +6,7 @@ import { OrderItem } from '../../entities/order-item.entity';
 import { Order } from '../../entities/order.entity';
 import { OrderController } from './order.controller';
 import { OrderProcessor } from './order.processor';
+import { OrderRepository } from './order.repository';
 import { OrderService } from './order.service';
 
 @Module({
@@ -16,7 +17,7 @@ import { OrderService } from './order.service';
     }),
   ],
   controllers: [OrderController],
-  providers: [OrderService, OrderProcessor],
+  providers: [OrderService, OrderProcessor, OrderRepository],
   exports: [OrderService],
 })
 export class OrderModule {}

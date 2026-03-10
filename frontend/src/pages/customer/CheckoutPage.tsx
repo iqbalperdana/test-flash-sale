@@ -10,6 +10,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
+  fetchPendingOrders,
   getOrderStatus,
   updatePaymentStatus,
 } from "../../services/orderService";
@@ -33,6 +34,11 @@ const CheckoutPage: React.FC = () => {
     if (!token || !jobId || !flashSaleId) {
       alert("Invalid checkout session");
       navigate("/");
+      return;
+    }
+
+    if (jobId === "RESUME") {
+      setStep(2);
     }
   }, [token, jobId, flashSaleId, navigate]);
 
@@ -48,25 +54,35 @@ const CheckoutPage: React.FC = () => {
 
   const handlePayment = async () => {
     setIsSubmitting(true);
-    if (!orderId) return;
     try {
-      // Step 1: Simulate Payment Processor Delay
-      await updatePaymentStatus(orderId, "PAID");
+      // Step 1: Fetch the pending order to get the Order ID
+      const order = await fetchPendingOrders(email, flashSaleId);
+      const newOrderId = order.id;
+      setOrderId(newOrderId);
+
+      // Step 2: Simulate Payment Processor Delay
+      await updatePaymentStatus(newOrderId, "PAID");
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Step 2: Transition to processing state
+      // Step 3: Transition to processing state
       setStep(3);
 
-      // Step 3: Start Polling for Order Status
-      pollOrderStatus();
+      // Step 4: Start Polling for Order Status (skip if RESUME since we already have the order)
+      if (jobId !== "RESUME") {
+        pollOrderStatus();
+      } else {
+        // For RESUME, we already have the orderId from Step 1
+        setIsSubmitting(false);
+      }
     } catch (error: any) {
-      alert("Payment simulation failed");
+      console.error("Payment failed", error);
+      alert(error.response?.data?.message || "Payment simulation failed");
       setIsSubmitting(false);
     }
   };
 
   const pollOrderStatus = async () => {
-    if (!jobId) return;
+    if (!jobId || jobId === "RESUME") return;
 
     let attempts = 0;
     const maxAttempts = 15; // 15 seconds polling
@@ -74,6 +90,7 @@ const CheckoutPage: React.FC = () => {
     const interval = setInterval(async () => {
       attempts++;
       try {
+        console.log("poll order");
         const { status, result } = await getOrderStatus(jobId);
 
         if (status === "completed" && result?.success) {

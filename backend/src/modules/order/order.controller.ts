@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { OrderCheckoutDto } from './dto/order-checkout.dto';
 import { OrderPaymentDto } from './dto/order-payment.dto';
 import { OrderService } from './order.service';
@@ -15,6 +15,14 @@ export class OrderController {
   @Get('status/:jobId')
   async getJobStatus(@Param('jobId') jobId: string) {
     return await this.orderService.getJobStatus(jobId);
+  }
+
+  @Get('pending')
+  async findPending(
+    @Query('userEmail') userEmail: string,
+    @Query('flashSaleId') flashSaleId?: number,
+  ) {
+    return await this.orderService.findPendingOrders(userEmail, flashSaleId);
   }
 
   @Get()

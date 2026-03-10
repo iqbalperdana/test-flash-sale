@@ -1,5 +1,7 @@
 import {
+  Activity,
   AlertCircle,
+  ArrowRight,
   Loader2,
   LogIn,
   LogOut,
@@ -12,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import type { FlashSale } from "../../services/flashSaleService";
 import { apiUrlFlashSales } from "../../services/flashSaleService";
-import { checkout } from "../../services/orderService";
+import { checkout, fetchPendingOrders } from "../../services/orderService";
 
 const FlashSalesList: React.FC = () => {
   const navigate = useNavigate();
@@ -27,6 +29,7 @@ const FlashSalesList: React.FC = () => {
     localStorage.getItem("user_email") || "",
   );
   const [loginEmail, setLoginEmail] = useState("");
+  const [pendingOrders, setPendingOrders] = useState<any[]>([]);
 
   const loadData = async () => {
     try {
@@ -39,11 +42,28 @@ const FlashSalesList: React.FC = () => {
     }
   };
 
+  const loadPendingOrders = async () => {
+    if (!currentUserEmail) {
+      setPendingOrders([]);
+      return;
+    }
+    try {
+      const data = await fetchPendingOrders(currentUserEmail);
+      setPendingOrders(data);
+    } catch (err) {
+      console.error("Failed to fetch pending orders", err);
+    }
+  };
+
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 10000);
+    loadPendingOrders();
+    const interval = setInterval(() => {
+      loadData();
+      loadPendingOrders();
+    }, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [currentUserEmail]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -228,7 +248,61 @@ const FlashSalesList: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="max-w-6xl mx-auto px-4 -mt-8 relative z-20">
+        {pendingOrders.length > 0 && (
+          <div className="mb-12 animate-in slide-in-from-bottom-8 duration-700">
+            <div className="bg-white rounded-[3rem] shadow-2xl overflow-hidden border-4 border-blue-500/20">
+              <div className="bg-blue-600 px-10 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Activity className="w-5 h-5 text-white animate-pulse" />
+                  <h3 className="text-white font-black uppercase tracking-[0.2em] text-xs">
+                    Pending Orders Found
+                  </h3>
+                </div>
+                <span className="bg-white/20 text-white px-3 py-1 rounded-full text-[10px] font-black">
+                  {pendingOrders.length} Pending
+                </span>
+              </div>
+              <div className="p-8 space-y-4">
+                {pendingOrders.map((order) => {
+                  const item = order.orderItems?.[0]?.item;
+                  const fsId = order.orderItems?.[0]?.flashSaleId;
+                  return (
+                    <div
+                      key={order.id}
+                      className="flex flex-col md:flex-row items-center justify-between gap-6 p-6 bg-blue-50/50 rounded-3xl border border-blue-100 hover:border-blue-300 transition-all group"
+                    >
+                      <div className="flex items-center gap-6">
+                        <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-3xl shadow-sm border border-blue-100 group-hover:scale-110 transition-transform">
+                          📦
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest mb-1">
+                            Pending Order #{order.id}
+                          </p>
+                          <h4 className="text-xl font-black text-gray-900 uppercase">
+                            {item?.title || "Unknown Item"}
+                          </h4>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() =>
+                          navigate(
+                            `/checkout?token=ALREADY_SECURED&jobId=RESUME&fsId=${fsId}&item=${encodeURIComponent(item?.title)}&price=${item?.price}`,
+                          )
+                        }
+                        className="bg-blue-600 hover:bg-black text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center gap-3 shadow-xl shadow-blue-200"
+                      >
+                        Resume Checkout <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
         {flashSales.length === 0 ? (
           <div className="text-center py-24 bg-white rounded-[2rem] shadow-xl border border-gray-100 ring-1 ring-gray-200/50">
             <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl text-gray-300">

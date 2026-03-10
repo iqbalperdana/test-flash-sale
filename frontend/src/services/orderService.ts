@@ -21,8 +21,8 @@ export const checkout = async (
   userEmail: string,
 ): Promise<OrderResult> => {
   const response = await api.post(`${apiUrlOrders}/checkout`, {
-    flashSaleId,
-    userEmail,
+    flashSaleId: Number(flashSaleId),
+    userEmail: userEmail,
   });
   return response.data;
 };
@@ -33,6 +33,19 @@ export const updatePaymentStatus = async (
 ): Promise<OrderResult> => {
   const response = await api.post(`${apiUrlOrders}/${orderId}/payment`, {
     paymentStatus,
+  });
+  return response.data;
+};
+
+export const fetchPendingOrders = async (
+  userEmail: string,
+  flashSaleId?: number,
+) => {
+  const response = await api.get(`${apiUrlOrders}/pending`, {
+    params: {
+      userEmail,
+      flashSaleId: flashSaleId ? Number(flashSaleId) : undefined,
+    },
   });
   return response.data;
 };

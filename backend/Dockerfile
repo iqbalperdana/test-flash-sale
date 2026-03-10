@@ -18,6 +18,7 @@ WORKDIR /app
 # Copy built artifacts and production dependencies from builder
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
 
 # Expose backend port
 EXPOSE 3000

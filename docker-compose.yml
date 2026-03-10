@@ -16,6 +16,7 @@ services:
       - DB_NAME=flashsale
       - PORT=3000
       - ALLOWED_ORIGINS=http://localhost:8080
+    command: npm run start:prod:migrate
     depends_on:
       - db
       - redis

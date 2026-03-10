@@ -14,12 +14,12 @@ import { OrderItem } from '../../entities/order-item.entity';
 import { Order } from '../../entities/order.entity';
 import { OrderCheckoutDto } from './dto/order-checkout.dto';
 import { OrderPaymentDto } from './dto/order-payment.dto';
+import { OrderRepository } from './order.repository';
 
 @Injectable()
 export class OrderService {
   constructor(
-    @InjectRepository(Order)
-    private orderRepository: Repository<Order>,
+    private readonly orderRepository: OrderRepository,
     @InjectRepository(OrderItem)
     private orderItemRepository: Repository<OrderItem>,
     @InjectRepository(FlashSale)
@@ -185,7 +185,7 @@ export class OrderService {
   }
 
   async findAll() {
-    return this.orderRepository.find({ order: { createdAt: 'DESC' } });
+    return this.orderRepository.getAllOrdersWithDetails();
   }
 
   async findOne(orderId: number) {
@@ -205,5 +205,20 @@ export class OrderService {
     const order = await this.findOne(orderId);
     order.status = orderPaymentDto.paymentStatus;
     return this.orderRepository.save(order);
+  }
+
+  async findPendingOrders(userEmail: string, flashSaleId?: number) {
+    const result = await this.orderRepository.findPendingOrders(
+      userEmail,
+      flashSaleId,
+    );
+
+    if (flashSaleId && !result) {
+      throw new NotFoundException(
+        'Pending order not found for this user and flash sale',
+      );
+    }
+
+    return result;
   }
 }
