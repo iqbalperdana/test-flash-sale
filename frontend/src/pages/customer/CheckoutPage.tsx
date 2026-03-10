@@ -9,7 +9,10 @@ import {
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { getOrderStatus } from "../../services/orderService";
+import {
+  getOrderStatus,
+  updatePaymentStatus,
+} from "../../services/orderService";
 
 const CheckoutPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -45,8 +48,10 @@ const CheckoutPage: React.FC = () => {
 
   const handlePayment = async () => {
     setIsSubmitting(true);
+    if (!orderId) return;
     try {
       // Step 1: Simulate Payment Processor Delay
+      await updatePaymentStatus(orderId, "PAID");
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Step 2: Transition to processing state

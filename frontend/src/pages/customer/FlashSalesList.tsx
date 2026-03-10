@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import type { FlashSale } from "../../services/flashSaleService";
 import { apiUrlFlashSales } from "../../services/flashSaleService";
-import { acquireToken } from "../../services/orderService";
+import { checkout } from "../../services/orderService";
 
 const FlashSalesList: React.FC = () => {
   const navigate = useNavigate();
@@ -72,7 +72,7 @@ const FlashSalesList: React.FC = () => {
 
     try {
       const [result] = await Promise.all([
-        acquireToken(flashSale.id, currentUserEmail),
+        checkout(flashSale.id, currentUserEmail),
         minDelay,
       ]);
 
@@ -84,7 +84,7 @@ const FlashSalesList: React.FC = () => {
       await minDelay;
 
       const message =
-        error.response?.data?.message || "Failed to secure a spot. Try again!";
+        error.response?.data?.message || "Failed to checkout item. Try again!";
       setErrorInfo({
         title: "Flash Sale Alert",
         message: message,
@@ -163,7 +163,7 @@ const FlashSalesList: React.FC = () => {
             </div>
           </div>
           <h2 className="text-4xl font-black uppercase tracking-tighter mb-2 drop-shadow-lg">
-            Securing your spot...
+            Checking out...
           </h2>
           <p className="text-blue-100 font-bold opacity-90 uppercase tracking-widest text-sm animate-pulse">
             Checking stock availability
@@ -208,10 +208,6 @@ const FlashSalesList: React.FC = () => {
               >
                 Dismiss Flash Alert
               </button>
-
-              <p className="mt-6 text-[10px] text-gray-300 font-black uppercase tracking-widest">
-                System Security Exception: ER-0400
-              </p>
             </div>
           </div>
         </div>
@@ -227,8 +223,7 @@ const FlashSalesList: React.FC = () => {
             </span>
           </h1>
           <p className="text-xl md:text-2xl text-blue-100 opacity-90 max-w-3xl mx-auto font-medium leading-relaxed">
-            The clock is ticking! Secure high-demand items with real-time stock
-            management and atomic token acquisition.
+            The clock is ticking! Grab your items now!
           </p>
         </div>
       </div>
@@ -263,9 +258,19 @@ const FlashSalesList: React.FC = () => {
                   <div className="relative overflow-hidden">
                     <div
                       className={`absolute top-6 right-6 z-20 px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-xl backdrop-blur-md 
-                      ${isOngoing ? "bg-red-500/90 text-white animate-pulse" : "bg-blue-600/90 text-white"}`}
+                      ${
+                        isOngoing
+                          ? fs.availableStock > 0
+                            ? "bg-red-500/90 text-white animate-pulse"
+                            : "bg-gray-500/90 text-white"
+                          : "bg-blue-600/90 text-white"
+                      }`}
                     >
-                      {isOngoing ? "● Live Now" : "Upcoming"}
+                      {isOngoing
+                        ? fs.availableStock > 0
+                          ? "● Live Now"
+                          : "Sold Out"
+                        : "Upcoming"}
                     </div>
                     <div className="h-56 bg-gradient-to-br from-gray-50 to-gray-150 flex items-center justify-center text-6xl group-hover:scale-110 transition-transform duration-700 ease-out grayscale group-hover:grayscale-0">
                       📦

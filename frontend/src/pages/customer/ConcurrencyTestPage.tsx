@@ -22,7 +22,7 @@ import {
   type FlashSale,
 } from "../../services/flashSaleService";
 import { fetchItemsData, type Item } from "../../services/itemsService";
-import { acquireToken } from "../../services/orderService";
+import { checkout } from "../../services/orderService";
 
 interface SimulationLog {
   id: string;
@@ -55,6 +55,7 @@ const ConcurrencyTestPage: React.FC = () => {
 
   // Stats
   const [stats, setStats] = useState({ success: 0, failed: 0 });
+  const [rps, setRps] = useState(0);
   const logSize = 500;
 
   const loadInitialData = async () => {
@@ -131,7 +132,7 @@ const ConcurrencyTestPage: React.FC = () => {
       const logId = Math.random().toString(36).substr(2, 9);
 
       try {
-        await acquireToken(selectedSaleId, email);
+        await checkout(selectedSaleId, email);
         const newLog: SimulationLog = {
           id: logId,
           timestamp: new Date().toLocaleTimeString(),
@@ -155,6 +156,9 @@ const ConcurrencyTestPage: React.FC = () => {
     });
 
     await Promise.all(tasks);
+    const endTime = Date.now();
+    const durationSeconds = (endTime - startTime) / 1000;
+    setRps(Math.round(simCount / (durationSeconds || 1)));
     setIsSimulating(false);
     loadInitialData(); // Refresh list to see stock updates
   };
@@ -406,17 +410,14 @@ const ConcurrencyTestPage: React.FC = () => {
             </div>
             <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">
-                Efficiency Rate
+                Requests per second
               </p>
               <div className="flex items-baseline gap-2">
                 <span className="text-4xl font-black text-blue-400 tracking-tighter">
-                  {simCount > 0
-                    ? Math.round(
-                        (stats.success / (stats.success + stats.failed || 1)) *
-                          100,
-                      )
-                    : 0}
-                  %
+                  {rps}
+                </span>
+                <span className="text-[10px] font-black text-blue-500 uppercase">
+                  req/s
                 </span>
               </div>
             </div>

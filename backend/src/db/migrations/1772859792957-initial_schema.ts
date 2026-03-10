@@ -37,16 +37,6 @@ export class InitialSchema1772859792957 implements MigrationInterface {
             CONSTRAINT "PK_d01158fe15b1ead5c26fd7f4e90" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "inventory" (
-            "id" BIGSERIAL NOT NULL, 
-            "total_stock" integer NOT NULL DEFAULT '0', 
-            "available_stock" integer NOT NULL DEFAULT '0', 
-            "created_at" TIMESTAMP NOT NULL DEFAULT now(), 
-            "updated_at" TIMESTAMP NOT NULL DEFAULT now(), 
-            "item_id" bigint, 
-            CONSTRAINT "PK_82aa5da437c5bbfb80703b08309" PRIMARY KEY ("id"))`,
-    );
-    await queryRunner.query(
       `CREATE TABLE "flash_sale" (
             "id" BIGSERIAL NOT NULL, 
             "name" character varying NOT NULL, 
@@ -72,11 +62,6 @@ export class InitialSchema1772859792957 implements MigrationInterface {
       FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "inventory" 
-      ADD CONSTRAINT "FK_94f5cbcb5f280f2f30bd4a9fd90" 
-      FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
-    );
-    await queryRunner.query(
       `ALTER TABLE "flash_sale" ADD CONSTRAINT "FK_2ac37fab8feb8cdb1a2d5649651" FOREIGN KEY ("item_id") REFERENCES "item"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
   }
@@ -86,16 +71,12 @@ export class InitialSchema1772859792957 implements MigrationInterface {
       `ALTER TABLE "flash_sale" DROP CONSTRAINT "FK_2ac37fab8feb8cdb1a2d5649651"`,
     );
     await queryRunner.query(
-      `ALTER TABLE "inventory" DROP CONSTRAINT "FK_94f5cbcb5f280f2f30bd4a9fd90"`,
-    );
-    await queryRunner.query(
       `ALTER TABLE "order_item" DROP CONSTRAINT "FK_f9129a798f2308714d1e3be2463"`,
     );
     await queryRunner.query(
       `ALTER TABLE "order_item" DROP CONSTRAINT "FK_e9674a6053adbaa1057848cddfa"`,
     );
     await queryRunner.query(`DROP TABLE "flash_sale"`);
-    await queryRunner.query(`DROP TABLE "inventory"`);
     await queryRunner.query(`DROP TABLE "order_item"`);
     await queryRunner.query(`DROP TABLE "item"`);
     await queryRunner.query(`DROP TABLE "order"`);

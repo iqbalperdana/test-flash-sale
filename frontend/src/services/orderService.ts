@@ -16,13 +16,23 @@ export interface JobStatus {
   };
 }
 
-export const acquireToken = async (
+export const checkout = async (
   flashSaleId: number,
   userEmail: string,
 ): Promise<OrderResult> => {
-  const response = await api.post(`${apiUrlOrders}/acquire-token`, {
+  const response = await api.post(`${apiUrlOrders}/checkout`, {
     flashSaleId,
     userEmail,
+  });
+  return response.data;
+};
+
+export const updatePaymentStatus = async (
+  orderId: number,
+  paymentStatus: string,
+): Promise<OrderResult> => {
+  const response = await api.post(`${apiUrlOrders}/${orderId}/payment`, {
+    paymentStatus,
   });
   return response.data;
 };

@@ -12,7 +12,7 @@ import { DataSource, Repository } from 'typeorm';
 import { FlashSale } from '../../entities/flash-sale.entity';
 import { OrderItem } from '../../entities/order-item.entity';
 import { Order } from '../../entities/order.entity';
-import { CreateOrderDto } from './dto/create-order.dto';
+import { OrderCheckoutDto } from './dto/order-checkout.dto';
 
 @Injectable()
 export class OrderService {
@@ -36,12 +36,15 @@ export class OrderService {
     return `flash_sale:${id}:buyers`;
   }
 
-  async acquireToken(flashSaleId: number, userEmail: string) {
-    const tokensKey = this.getTokensKey(flashSaleId);
-    const buyersKey = this.getBuyersKey(flashSaleId);
+  async checkout(orderCheckoutDto: OrderCheckoutDto) {
+    const tokensKey = this.getTokensKey(orderCheckoutDto.flashSaleId);
+    const buyersKey = this.getBuyersKey(orderCheckoutDto.flashSaleId);
 
     // 1. Check if user already purchased (SADD returns 1 if new, 0 if already in set)
-    const isNewBuyer = await this.redis.sadd(buyersKey, userEmail);
+    const isNewBuyer = await this.redis.sadd(
+      buyersKey,
+      orderCheckoutDto.userEmail,
+    );
     if (!isNewBuyer) {
       throw new BadRequestException('Already purchased this item');
     }
@@ -51,14 +54,14 @@ export class OrderService {
 
     if (!token) {
       // Revert buyer set if no tokens left
-      await this.redis.srem(buyersKey, userEmail);
+      await this.redis.srem(buyersKey, orderCheckoutDto.userEmail);
       throw new BadRequestException('Sold out');
     }
 
     // 3. Dispatch Job to BullMQ
     const job = await this.orderQueue.add('create-order', {
-      userEmail,
-      flashSaleId,
+      userEmail: orderCheckoutDto.userEmail,
+      flashSaleId: orderCheckoutDto.flashSaleId,
       token,
       quantity: 1, // Fixed to 1 as per flash sale usual constraint
     });
@@ -89,8 +92,22 @@ export class OrderService {
     return this.orderRepository.find({ order: { createdAt: 'DESC' } });
   }
 
-  // legacy or internal manual order
-  async createManualOrder(createOrderDto: CreateOrderDto) {
-    // standard order logic if needed
+  async findOne(orderId: number) {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['orderItems', 'orderItems.item'],
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return order;
+  }
+
+  async updatePaymentStatus(orderId: number, orderPaymentDto: OrderPaymentDto) {
+    const order = await this.findOne(orderId);
+    order.status = orderPaymentDto.paymentStatus;
+    return this.orderRepository.save(order);
   }
 }

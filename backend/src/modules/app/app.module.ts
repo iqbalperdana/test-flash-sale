@@ -5,7 +5,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import databaseConfig from '../../common/configs/database.config';
 import { RedisModule } from '../../common/redis/redis.module';
 import { FlashSaleModule } from '../flash-sale/flash-sale.module';
-import { InventoryModule } from '../inventory/inventory.module';
 import { ItemModule } from '../item/item.module';
 import { OrderModule } from '../order/order.module';
 import { AppController } from './app.controller';
@@ -22,7 +21,6 @@ import { AppService } from './app.service';
       useFactory: (config) => ({ ...config }),
     }),
     ItemModule,
-    InventoryModule,
     FlashSaleModule,
     OrderModule,
     RedisModule,
