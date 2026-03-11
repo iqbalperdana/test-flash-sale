@@ -1,30 +1,32 @@
-import { getQueueToken } from '@nestjs/bullmq';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  INestApplication,
+  NotFoundException,
+  ValidationPipe,
+} from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
+import { OrderService } from '../src/modules/order/order.service';
 import { AppModule } from './../src/modules/app/app.module';
 
 describe('OrderController (e2e)', () => {
   let app: INestApplication;
 
-  const mockRedis = {
-    sadd: jest.fn(),
-    rpop: jest.fn(),
-    srem: jest.fn(),
-  };
-
-  const mockQueue = {
-    add: jest.fn(),
+  const mockOrderService = {
+    checkout: jest.fn(),
+    getJobStatus: jest.fn(),
+    findPendingOrders: jest.fn(),
+    findAll: jest.fn(),
+    findOne: jest.fn(),
+    updatePaymentStatus: jest.fn(),
   };
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider('REDIS_CLIENT')
-      .useValue(mockRedis)
-      .overrideProvider(getQueueToken('orders'))
-      .useValue(mockQueue)
+      .overrideProvider(OrderService)
+      .useValue(mockOrderService)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -37,9 +39,11 @@ describe('OrderController (e2e)', () => {
   });
 
   it('/api/v1/orders/checkout (POST) - success', async () => {
-    mockRedis.sadd.mockResolvedValue(1);
-    mockRedis.rpop.mockResolvedValue('token-123');
-    mockQueue.add.mockResolvedValue({ id: 'job-123' });
+    mockOrderService.checkout.mockResolvedValue({
+      token: 'token-123',
+      jobId: 'job-123',
+      message: 'Spot secured!',
+    });
 
     return request(app.getHttpServer())
       .post('/api/v1/orders/checkout')
@@ -55,7 +59,9 @@ describe('OrderController (e2e)', () => {
   });
 
   it('/api/v1/orders/checkout (POST) - already purchased', async () => {
-    mockRedis.sadd.mockResolvedValue(0);
+    mockOrderService.checkout.mockImplementation(() => {
+      throw new BadRequestException('Already purchased this item');
+    });
 
     return request(app.getHttpServer())
       .post('/api/v1/orders/checkout')
@@ -66,6 +72,51 @@ describe('OrderController (e2e)', () => {
       .expect(400)
       .expect((res) => {
         expect(res.body.message).toBe('Already purchased this item');
+      });
+  });
+
+  it('/api/v1/orders/checkout (POST) - sold out', async () => {
+    mockOrderService.checkout.mockImplementation(() => {
+      throw new BadRequestException('Sold out');
+    });
+
+    return request(app.getHttpServer())
+      .post('/api/v1/orders/checkout')
+      .send({
+        flashSaleId: 1,
+        userEmail: 'test@example.com',
+      })
+      .expect(400)
+      .expect((res) => {
+        expect(res.body.message).toBe('Sold out');
+      });
+  });
+
+  it('/api/v1/orders/status/:jobId (GET) - success', async () => {
+    mockOrderService.getJobStatus.mockResolvedValue({
+      status: 'completed',
+      result: { success: true, orderId: 10 },
+    });
+
+    return request(app.getHttpServer())
+      .get('/api/v1/orders/status/job-123')
+      .expect(200)
+      .expect((res) => {
+        expect(res.body.status).toBe('completed');
+        expect(res.body.result.orderId).toBe(10);
+      });
+  });
+
+  it('/api/v1/orders/status/:jobId (GET) - not found', async () => {
+    mockOrderService.getJobStatus.mockImplementation(() => {
+      throw new NotFoundException('Job not found');
+    });
+
+    return request(app.getHttpServer())
+      .get('/api/v1/orders/status/invalid-job')
+      .expect(404)
+      .expect((res) => {
+        expect(res.body.message).toBe('Job not found');
       });
   });
 });
