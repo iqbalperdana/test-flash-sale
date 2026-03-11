@@ -61,7 +61,7 @@ const ItemsPage: React.FC = () => {
                 SKU
               </th>
               <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Title
+                Name
               </th>
               <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Price
@@ -81,7 +81,7 @@ const ItemsPage: React.FC = () => {
                   {item.sku}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {item.title}
+                  {item.name}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   ${Number(item.price).toFixed(2)}

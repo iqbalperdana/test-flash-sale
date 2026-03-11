@@ -12,7 +12,7 @@ const ItemForm: React.FC = () => {
   const isEditing = Boolean(id);
 
   const [formData, setFormData] = useState({
-    title: "",
+    name: "",
     sku: "",
     price: 0,
     description: "",
@@ -25,7 +25,7 @@ const ItemForm: React.FC = () => {
         try {
           const item = await getItemById(Number(id));
           setFormData({
-            title: item.title,
+            name: item.name,
             sku: item.sku,
             price: Number(item.price),
             description: item.description || "",
@@ -81,12 +81,12 @@ const ItemForm: React.FC = () => {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-gray-700 text-sm font-bold mb-2">
-              Title
+              Name
             </label>
             <input
               type="text"
-              name="title"
-              value={formData.title}
+              name="name"
+              value={formData.name}
               onChange={handleChange}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               required

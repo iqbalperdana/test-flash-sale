@@ -147,7 +147,7 @@ const FlashSaleForm: React.FC = () => {
             <option value="">-- Select an Item --</option>
             {items.map((item) => (
               <option key={item.id} value={item.id}>
-                {item.title} (SKU: {item.sku})
+                {item.name} (SKU: {item.sku})
               </option>
             ))}
           </select>

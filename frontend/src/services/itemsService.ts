@@ -2,7 +2,7 @@ import api from "../api/axios";
 
 export interface Item {
   id: number;
-  title: string;
+  name: string;
   sku: string;
   description: string;
   price: number;

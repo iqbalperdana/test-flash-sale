@@ -1,5 +1,5 @@
 export class CreateItemDto {
-  title: string;
+  name: string;
   sku: string;
   description?: string;
   price: number;

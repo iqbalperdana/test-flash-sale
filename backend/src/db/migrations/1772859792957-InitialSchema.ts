@@ -17,7 +17,7 @@ export class InitialSchema1772859792957 implements MigrationInterface {
     await queryRunner.query(
       `CREATE TABLE "item" (
             "id" BIGSERIAL NOT NULL, 
-            "title" character varying NOT NULL, 
+            "name" character varying NOT NULL, 
             "description" character varying, 
             "price" numeric(10,2) NOT NULL, 
             "created_at" TIMESTAMP NOT NULL DEFAULT now(), 

@@ -21,7 +21,7 @@ const CheckoutPage: React.FC = () => {
   const token = searchParams.get("token");
   const jobId = searchParams.get("jobId");
   const flashSaleId = Number(searchParams.get("fsId"));
-  const itemTitle = searchParams.get("item") || "Item";
+  const itemName = searchParams.get("item") || "Item";
   const price = searchParams.get("price") || "0";
 
   const [step, setStep] = useState(1);
@@ -197,7 +197,7 @@ const CheckoutPage: React.FC = () => {
                       Item Reservation
                     </p>
                     <h3 className="text-2xl font-black text-gray-900 uppercase truncate">
-                      {itemTitle}
+                      {itemName}
                     </h3>
                   </div>
                   <div className="text-right">
@@ -330,7 +330,7 @@ const CheckoutPage: React.FC = () => {
                         Reserved Item
                       </p>
                       <h4 className="text-2xl font-black text-gray-800 uppercase">
-                        {itemTitle}
+                        {itemName}
                       </h4>
                     </div>
 

@@ -12,7 +12,7 @@ export class Item {
   id: number;
 
   @Column()
-  title: string;
+  name: string;
 
   @Column({ unique: true })
   sku: string;

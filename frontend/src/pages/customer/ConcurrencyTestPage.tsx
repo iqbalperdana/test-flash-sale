@@ -240,7 +240,7 @@ const ConcurrencyTestPage: React.FC = () => {
                     <option value="">Select Prototype</option>
                     {items.map((i) => (
                       <option key={i.id} value={i.id}>
-                        {i.title}
+                        {i.name}
                       </option>
                     ))}
                   </select>
@@ -288,7 +288,7 @@ const ConcurrencyTestPage: React.FC = () => {
                         </span>
                       </div>
                       <p className="text-[10px] font-bold text-slate-500 truncate mb-2">
-                        {fs.item?.title}
+                        {fs.item?.name}
                       </p>
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1.5">

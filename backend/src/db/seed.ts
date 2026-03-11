@@ -22,13 +22,13 @@ async function seed() {
   let item = await itemRepo.findOne({ where: { sku: 'iPhone15Pro' } });
   if (!item) {
     item = itemRepo.create({
-      title: 'iPhone 17 Pro',
+      name: 'iPhone 17 Pro',
       sku: 'iPhone17Pro',
       description: 'The latest iPhone with Titanium design.',
       price: 399.0,
     });
     item = await itemRepo.save(item);
-    console.log('Created item:', item.title);
+    console.log('Created item:', item.name);
   }
 
   const flashSaleName = 'Opening Flash Sale - iPhone 17 Pro';

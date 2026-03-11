@@ -97,7 +97,7 @@ const FlashSalesList: React.FC = () => {
       ]);
 
       navigate(
-        `/checkout?token=${result.token}&jobId=${result.jobId}&fsId=${flashSale.id}&item=${encodeURIComponent(flashSale.item.title)}&price=${flashSale.item.price}`,
+        `/checkout?token=${result.token}&jobId=${result.jobId}&fsId=${flashSale.id}&item=${encodeURIComponent(flashSale.item.name)}&price=${flashSale.item.price}`,
       );
     } catch (error: any) {
       // Ensure we waited at least 1 sec even on error
@@ -281,14 +281,14 @@ const FlashSalesList: React.FC = () => {
                             Pending Order #{order.id}
                           </p>
                           <h4 className="text-xl font-black text-gray-900 uppercase">
-                            {item?.title || "Unknown Item"}
+                            {item?.name || "Unknown Item"}
                           </h4>
                         </div>
                       </div>
                       <button
                         onClick={() =>
                           navigate(
-                            `/checkout?token=ALREADY_SECURED&jobId=RESUME&fsId=${fsId}&item=${encodeURIComponent(item?.title)}&price=${item?.price}`,
+                            `/checkout?token=ALREADY_SECURED&jobId=RESUME&fsId=${fsId}&item=${encodeURIComponent(item?.name)}&price=${item?.price}`,
                           )
                         }
                         className="bg-blue-600 hover:bg-black text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center gap-3 shadow-xl shadow-blue-200"
@@ -354,7 +354,7 @@ const FlashSalesList: React.FC = () => {
                   <div className="p-8 flex-1 flex flex-col">
                     <div className="mb-4">
                       <h3 className="text-2xl font-black text-gray-900 group-hover:text-blue-700 transition-colors uppercase truncate">
-                        {fs.item?.title}
+                        {fs.item?.name}
                       </h3>
                     </div>
 
