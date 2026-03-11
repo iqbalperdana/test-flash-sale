@@ -40,6 +40,18 @@ Used for persistent storage of orders and product information.
 
 Redis is used for concurrency control to make sure that purchase can be made smoothly without overselling.
 
+### Queue
+
+- **Redis Queue (BullMQ)**
+
+Used to decouple API requests from order processing and prevent database overload during high traffic. We can use alternative queue but with the one that have delayed job because we need this to expire order.
+
+### To be implemented in production
+
+- **CDN**: To distribute static content as we ship the frontend built/assets to client
+- **Load Balancer/Nginx**: To distribute the traffic between instance and to add network rules (rate limit, robot, etc) to harden the security and availability
+- **Observability**: To store and analyze the log of the system.
+
 ## Flow Diagram
 
 ![flow diagram](docs/img/flow-diagram.png)
