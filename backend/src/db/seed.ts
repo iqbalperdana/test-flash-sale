@@ -19,7 +19,7 @@ async function seed() {
   const itemRepo = connectionSource.getRepository(Item);
   const flashSaleRepo = connectionSource.getRepository(FlashSale);
 
-  let item = await itemRepo.findOne({ where: { sku: 'iPhone15Pro' } });
+  let item = await itemRepo.findOne({ where: { sku: 'iPhone17Pro' } });
   if (!item) {
     item = itemRepo.create({
       name: 'iPhone 17 Pro',
