@@ -145,3 +145,7 @@ Unit test only available for backend and its utilize `jest`
 2. Add target selection to add new flash sale for existing item with custom available stock and duration
 3. Select test parameters whether it distributed with email generation for number if request or burst mode with the same email
 4. Click initiate sequence to simulate purchase
+
+## Footnote
+
+The design and development of this system is utilizing combination of multiple AI tools: ChatGPT (for design), Antigravity (for code assistance), Deepseek (for second opinion)
