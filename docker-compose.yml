@@ -18,8 +18,10 @@ services:
       - ALLOWED_ORIGINS=http://localhost:8080
     command: npm run start:prod:migrate
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   frontend:
     build:
@@ -32,7 +34,8 @@ services:
     environment:
       - BACKEND_API_URL=http://localhost:3000
     depends_on:
-      - backend
+      backend:
+        condition: service_started
 
   db:
     image: postgres:15-alpine
@@ -44,11 +47,21 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d flashsale"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: valkey/valkey:8-alpine
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   pgdata:
