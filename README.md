@@ -141,7 +141,7 @@ Unit test only available for backend and its utilize `jest`
 
 ## How to stress test the project
 
-1. Open the page for testing at `http://localhost:3000/test`
+1. Open the page for testing at `http://localhost:8080/test`
 2. Add target selection to add new flash sale for existing item with custom available stock and duration
 3. Select test parameters whether it distributed with email generation for number if request or burst mode with the same email
 4. Click initiate sequence to simulate purchase
